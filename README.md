@@ -1,5 +1,3 @@
-# Illuminating-The-Future
-
 # Power Outage Prediction Project
 
 ## Overview
