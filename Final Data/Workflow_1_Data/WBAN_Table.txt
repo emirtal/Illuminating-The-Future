@@ -1,0 +1,64 @@
+                                                 WBANMASTERLIST.HTML
+
+WBAN: (Weather-Bureau-Army-Navy) WBAN numbers were the first major attempt at a coordinated station numbering scheme among 
+several weather reporting authorities. Original participants in the WBAN number plans were the United States Weather Bureau, 
+Air Force, Navy, and Army; the Canadian Department of Transportation; and certain German and Korean stations in close 
+cooperation with the US Weather Services. 
+
+It is a five-digit station identifier that is used at NCEI for digital data storage and general station identification 
+purposes. Invented in the 1950's, WBAN station numbers were first used as identifers for stations reporting meteorological 
+observations on the then-standard WBAN series forms such as WBAN 10A, WBAN 10B and WBAN 10C.
+
+This is the official WBAN master station list and it is updated monthly. This report is in HTML format.
+
+
+FIELD                             DESCRIPTION
+----------------------------------------------------------------------------------------------------------------------------------
+REGION                            Three digit number that describes a particular 10 degree square in which a station is located.
+                                  The globe is divided into 8 different areas or squares, with 9 and 0 being for excess.
+                                  First position is the number of the area or square the station is located in. 
+                                  The second position is the first number of latitude of the station. 
+                                  The final digit is the second number of the longitude.
+                                                                                                                                                 
+WBAN_ID			          WBAN Identifier, used at NCEI for digital data storage and general station identification.                                                                                               
+
+STATION_NAME                      Name of station, may contain characters, numbers, or symbols.                                                                                               
+
+STATE_PROVINCE                    USPS two character alphabetic abbreviation for each state or province.
+
+COUNTY                            Name of county.  
+
+COUNTRY				  Name of country.                                                                                             
+
+EXTENDED_NAME                     The name of the airport or other place where the station is located.                                                                                               
+
+CALL_SIGN                         Alpha-numeric, managed by USDT Federal Aviation Administration used for site identification 
+                                  of sites vital to navigation. Commonly referred to as "Call Sign".
+
+STATION_TYPE                      Type of observing programs associated with the station.     
+
+DATE_ASSIGNED                     Used to track when a WBAN is assigned, was added to report in February 2005.
+
+BEGIN_DATE                        Date station started using this WBAN.                                                                  
+
+COMMENTS                          Used to explain any other pertinent information for the station such who requested the 
+                                  WBAN be assigned. Sometimes contains call sign for the station.
+
+LOCATION			  Latitude and longitude, mixed historical formats.
+
+ELEV_OTHER			  Unknown elevation type value.
+
+ELEV_GROUND		          Ground elevation.
+
+ELEV_RUNWAY			  Field, aerodrome or runway.
+
+ELEV_BAROMETRIC       		  Ivory point of the Barometer or Altimeter Setting.
+
+ELEV_STATION         	          Unknown.
+
+ELEV_UPPER_AIR	                  Unused.
+----------------------------------------------------------------------------------------------------------------------------------                                                                                                 
+
+
+
+

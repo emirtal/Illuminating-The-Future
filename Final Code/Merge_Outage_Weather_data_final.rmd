@@ -1,0 +1,127 @@
+---
+title: "Weather Outage Merge"
+output: html_document
+date: "2023-07-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Load Library
+
+library(readr)
+library(dplyr)
+library(lubridate)
+library(stringr)
+NY_CA_weather <- read_csv("~/Team-36/Data/Weather/CleanWeather/NY_CA_weather.csv")
+head(NY_CA_weather)
+NY_CA_weather$DATE <- mdy(NY_CA_weather$DATE)
+summary(NY_CA_weather)
+NY_CA_weather %>%
+  group_by(NAME) %>%
+  summarise(cnt = n(), max_dt = max(DATE), min_date = min(DATE))
+
+```
+
+```{r}
+#State Abbreviations
+
+state_abb <- read_csv("~/Team-36/Data/state_abbrev.csv")
+head(state_abb)
+```
+
+```{r}
+#Regex Pattern to obtain State Abbreviations
+
+patr <- regexpr("\\b([a-zA-Z]{2})\\b", NY_CA_weather$NAME)
+NY_CA_weather$state_abb <- NA
+NY_CA_weather$state_abb[which(patr != -1)] <- regmatches(NY_CA_weather$NAME, patr)
+```
+
+
+```{r}
+#Merged Weather Data
+
+NY_CA_weather<-merge(NY_CA_weather,state_abb, on = 'state_abb')
+
+head(NY_CA_weather)
+```
+
+```{r}
+#Regex to Obtain Demand Loss
+
+outage <- read_csv("~/Team-36/Data/Outage data/Complied_clean_outage_data_v3.csv")
+head(outage)
+
+df = outage
+
+r <- regexpr("\\b\\d{1,5}(?:,\\d{3})*\\b", df$'Demand Loss (MW)')
+df$match <- NA
+df$match[which(r != -1)] <- regmatches(df$'Demand Loss (MW)', r)
+
+#Convert Demand Loss to Numeric
+
+df <- df %>% 
+  mutate(match = as.numeric(gsub(",", "", match)))
+
+df$`Demand Loss (MW)` = df$match
+
+df <- df[,-14]
+
+head(df)
+```
+
+
+```{r}
+
+#New Data Frame with Combined Rows
+
+df <- df %>% group_by(df$"Affected State",df$"Date Event Began") %>% summarise('Demand Loss (MW)' = sum(`Demand Loss (MW)`, na.rm = TRUE), `Date of Restoration` = first(`Date of Restoration`), `Event Type` = first(`Event Type`), `Region` = first(`Region`)) 
+
+colnames(df)[1:2] = c("Affected State", "Date Event Began")
+
+head(df)
+
+```
+
+```{r}
+#Replace Event Type to Weather
+
+replace = "storm|Hurricane|Weather|Lightning|Rain|Wind|Tornado|Snow|Storm"
+
+is_contained <- grepl(replace, df$`Event Type`)
+
+df$`Event Type`[is_contained] = "Weather"
+
+df
+```
+
+
+```{r}
+#Summary
+
+summary(outage)
+ny_ca_outage<-outage %>% filter(outage$"Affected State" == "New York" | outage$"Affected State" == "California" )
+ny_ca_outage %>% group_by(ny_ca_outage$"Affected State",ny_ca_outage$"Date Event Began") %>% summarise(cnt = n()) %>% filter(cnt>1)
+```
+
+```{r}
+#Convert Dates
+
+df$`Date Event Began` = ymd(df$`Date Event Began`)
+df$`Date of Restoration` = ymd(df$`Date of Restoration`)
+head(df)
+
+write.csv(df, "~\\Team-36\\Code\\Cleaned_Outage_Data.csv", row.names=FALSE)
+```
+
+```{r}
+#Merged File
+
+merged_data <-left_join(NY_CA_weather, df, by = c('State' = 'Affected State','DATE' = 'Date Event Began'))
+head(merged_data)
+write.csv(merged_data, "~\\Team-36\\Code\\Merged_Data.csv", row.names=FALSE)
+```
+

@@ -1,0 +1,93 @@
+---
+title: "Cleanup on Merged_Data.csv"
+author: "Gerardo, "
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+```
+
+```{r}
+add_calVars <- function(df, col) {
+    
+    # Column must be Date Type!
+    # No quotes needed in function call!
+    
+    df = df %>%
+        mutate(Month = month({{col}}, label=TRUE), 
+               dayName = weekdays({{col}}),
+               Weekend = ifelse(dayName == "Saturday" | dayName == "Sunday", 1, 0) 
+        )
+    return(df)
+}
+
+getSeason <- function(DATES) {
+    WS <- as.Date("2012-12-15", format = "%Y-%m-%d") # Winter Solstice
+    SE <- as.Date("2012-3-15",  format = "%Y-%m-%d") # Spring Equinox
+    SS <- as.Date("2012-6-15",  format = "%Y-%m-%d") # Summer Solstice
+    FE <- as.Date("2012-9-15",  format = "%Y-%m-%d") # Fall Equinox
+
+    # Convert dates from any year to 2012 dates
+    d <- as.Date(strftime(DATES, format="2012-%m-%d"))
+
+    ifelse (d >= WS | d < SE, "Winter",
+      ifelse (d >= SE & d < SS, "Spring",
+        ifelse (d >= SS & d < FE, "Summer", "Fall")))
+}
+```
+
+```{r}
+
+df = read.csv(".\\Code\\Merged_Data.csv")
+print(df)
+
+df$DATE = as.Date(df$DATE)
+
+df = add_calVars(df, DATE)
+print(head(df))
+
+df = df %>% rename('Fog'= WT01,
+                   'HeavyFog'= WT02, 
+                   'Thunder'= WT03,
+                   'Sleet'= WT04,
+                   'Hail'= WT05,
+                   'Glaze'= WT06,
+                   "Dust"= WT07,
+                   "Smoke"= WT08,
+                   "DriftSnow"= WT09,
+                   "Winds"= WT11,
+                   "Mist"= WT13,
+                   "Drizzle"= WT14,
+                   "Rain"= WT16,
+                   "FrzRain"= WT17,
+                   "Snow"= WT18,
+                   "UnknownPrec"= WT19,
+                   "IceFog"= WT22
+                   ) %>%
+    
+    mutate(Blackout = ifelse(df$Demand.Loss..MW. == 'NA', 0, 1)) %>%
+    mutate_at(c(9:25,34), ~replace_na(.,0)) %>%
+    mutate_at(c(9:25,34), as.integer) %>%
+    select(-c('STATION','NAME'))
+
+df$Season = getSeason(df$DATE)
+#df$Blackout <- ifelse(is.na(df$Demand.Loss..MW.), 1, 0)
+
+
+print(colnames(df))
+print(head(df))
+write.csv(df, ".\\Data\\Merged_Data_V2.csv", row.names=FALSE)
+```
+
+
+```{r}
+#TBD
+
+```
+
+

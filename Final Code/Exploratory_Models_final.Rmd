@@ -1,0 +1,71 @@
+---
+title: "Exploratory Models"
+author: "Gerardo De la O"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+library(broom)
+```
+
+```{r}
+data = read.csv('.\\Data\\Merged_Data_V3.csv')
+
+df1 = data %>% 
+    mutate_at(c(29:30,33), as.factor) %>%
+    dplyr::select(-c('state_abb','DATE','State','Blackout','Date.of.Restoration','Event.Type','Region')) %>%
+    filter(!is.na(Demand.Loss..MW.))
+
+#df1$Demand.Loss..MW.[is.na(df1$Demand.Loss..MW.)] <- 0
+#sapply(lapply(df, unique), length)
+print(head(df1))
+```
+
+
+```{r}
+linReg = lm(Demand.Loss..MW. ~ .,data = df1)
+summary(linReg)
+
+#df1 = df1[!complete.cases(df1), ]
+
+# define "endpoint" models
+zero <- lm(Demand.Loss..MW. ~ 1, data=df1)
+all <- lm(Demand.Loss..MW. ~ ., data=df1)
+
+# perform step-wise regression
+stepReg <- step(zero, direction='both', scope=formula(all), trace=0)
+summary(stepReg)
+```
+
+
+
+
+
+
+```{r}
+set.seed(1)
+
+df2 = data %>% 
+    mutate_at(c(29:30,33), as.factor) %>%
+    dplyr::select(-c('state_abb','DATE','State','Demand.Loss..MW.','Date.of.Restoration','Event.Type','Region','SNOW'))
+dim(df2)
+
+nans1 = df2[!complete.cases(df2), ]
+write.csv(nans, ".\\Data\\NAS.csv", row.names=FALSE)
+
+
+#zero2 <- glm(Blackout ~ 1, data=df2, family = "binomial")
+stepLogit = glm(Blackout ~ ., data=df2, family = "binomial") %>% stepAIC(direction="both",trace = FALSE)
+
+summary(stepLogit)
+output <- tidy(stepLogit)
+
+write.csv(output, ".\\Data\\logit_model_exploratory.csv")
+
+```
+
+
